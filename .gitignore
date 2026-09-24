@@ -1,0 +1,32 @@
+# Build output (out-of-source builds only)
+build/
+build-*/
+out/
+cmake-build-*/
+
+# CMake-generated
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+CTestTestfile.cmake
+_deps/
+Testing/
+compile_commands.json
+
+# Visual Studio
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.suo
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db
