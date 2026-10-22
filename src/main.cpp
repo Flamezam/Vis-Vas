@@ -15,6 +15,8 @@ extern "C"
 #include "FakeArm.h"
 #include "ui/TimelineUI.h"
 #include "ui/OrbitCamera.h"
+#include "ui/SidePanel.h"
+#include "ui/Trails.h"
 
 #include <iostream>
 #include <memory>
@@ -299,6 +301,15 @@ int main()
     // Look at the arm from front-right, slightly above
     OrbitCamera camera({ 0.2f, 1.2f, 0.0f }, 1.8f, 35.0f, 15.0f);
 
+    // Trails on elbow and wrist by default (the shoulder barely moves)
+    TrailSettings trails;
+    trails.showJoint = { false, true, true };
+
+    std::vector<std::string> jointNames;
+    for (int joint = 0; joint < FakeArm::JointCount; ++joint)
+        jointNames.push_back(FakeArm::JointName(joint));
+    SidePanel sidePanel(timeline, trails, camera, jointNames);
+
     while (!WindowShouldClose())
     {
         // 1. Move the clock, 2. tell every object what time it is
@@ -312,14 +323,13 @@ int main()
         // 3. Draw the 3D scene
         BeginMode3D(camera.Get());
         DrawGrid(10, 0.25f);
+        DrawTrails(arm.GetTrack(), timeline.GetTime(), trails, FakeArm::JointColor);
         arm.Render();
         EndMode3D();
 
-        DrawText("Left-drag: rotate   Right-drag: pan   Wheel: zoom   R: reset   1/2/3: front/side/top",
-                 10, 10, 10, GRAY);
-
         // 4. Draw the UI on top
         rlImGuiBegin();
+        sidePanel.Render();
         timelineUI.Render();
         rlImGuiEnd();
 

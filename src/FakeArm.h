@@ -45,15 +45,30 @@ public:
         DrawLine3D(elbow, wrist, DARKGRAY);
 
         // Joints
-        DrawSphere(shoulder, 0.04f, RED);
-        DrawSphere(elbow, 0.04f, ORANGE);
-        DrawSphere(wrist, 0.04f, GREEN);
+        DrawSphere(shoulder, 0.04f, JointColor(Shoulder));
+        DrawSphere(elbow, 0.04f, JointColor(Elbow));
+        DrawSphere(wrist, 0.04f, JointColor(Wrist));
     }
 
     float GetDuration() const override { return m_track.GetDuration(); }
 
-    // Current joint positions, e.g. for drawing movement trails.
+    // Current joint positions.
     const Frame& GetCurrentFrame() const { return m_current; }
+
+    // All precomputed frames, e.g. for drawing movement trails.
+    const FrameTrack& GetTrack() const { return m_track; }
+
+    static const char* JointName(int joint)
+    {
+        static const char* names[JointCount] = { "Shoulder", "Elbow", "Wrist" };
+        return names[joint];
+    }
+
+    static Color JointColor(int joint)
+    {
+        static const Color colors[JointCount] = { RED, ORANGE, GREEN };
+        return colors[joint];
+    }
 
 private:
     void PreCompute(float durationSeconds, float sampleRateHz)
