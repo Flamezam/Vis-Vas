@@ -17,7 +17,7 @@ It only controls the Timeline - it never touches the 3D objects directly.
 class TimelineUI
 {
 public:
-    static constexpr float Height = 70.0f; // pixels, so the 3D view can leave room for it
+    static constexpr float Height = 80.0f; // pixels, so the 3D view can leave room for it
 
     explicit TimelineUI(Timeline& timeline) : m_timeline(timeline) {}
 
@@ -33,7 +33,7 @@ public:
 
         const ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                                        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-                                       ImGuiWindowFlags_NoSavedSettings;
+                                       ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar;
         ImGui::Begin("Timeline", nullptr, flags);
 
         RenderButtons();
@@ -60,7 +60,9 @@ private:
 
         ImGui::SameLine();
         // Fixed width so the buttons next to it don't shift when the text changes.
-        if (ImGui::Button(m_timeline.IsPlaying() ? "Pause" : "Play", { 60.0f, 0.0f }))
+        // Width is measured from the longer word, so it fits any font size or padding.
+        const float playWidth = ImGui::CalcTextSize("Pause").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+        if (ImGui::Button(m_timeline.IsPlaying() ? "Pause" : "Play", { playWidth, 0.0f }))
             TogglePlay();
 
         ImGui::SameLine();

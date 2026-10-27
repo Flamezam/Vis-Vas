@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Playback.h"
+#include "ui/Scene.h"
 
 #include <cmath>
 
@@ -40,14 +41,21 @@ public:
         const Vector3& elbow    = m_current.joints[Elbow];
         const Vector3& wrist    = m_current.joints[Wrist];
 
+        // Shadows on the floor first, so the arm is drawn over them
+        Scene::DrawBoneShadow(shoulder, elbow);
+        Scene::DrawBoneShadow(elbow, wrist);
+        Scene::DrawJointShadow(shoulder);
+        Scene::DrawJointShadow(elbow);
+        Scene::DrawJointShadow(wrist);
+
         // Bones
-        DrawLine3D(shoulder, elbow, DARKGRAY);
-        DrawLine3D(elbow, wrist, DARKGRAY);
+        Scene::DrawBone(shoulder, elbow);
+        Scene::DrawBone(elbow, wrist);
 
         // Joints
-        DrawSphere(shoulder, 0.04f, JointColor(Shoulder));
-        DrawSphere(elbow, 0.04f, JointColor(Elbow));
-        DrawSphere(wrist, 0.04f, JointColor(Wrist));
+        Scene::DrawJoint(shoulder, JointColor(Shoulder));
+        Scene::DrawJoint(elbow, JointColor(Elbow));
+        Scene::DrawJoint(wrist, JointColor(Wrist));
     }
 
     float GetDuration() const override { return m_track.GetDuration(); }

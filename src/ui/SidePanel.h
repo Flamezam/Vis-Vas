@@ -8,6 +8,8 @@
 #include <imgui.h>
 #include <raylib.h>
 
+#include <algorithm>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -21,7 +23,7 @@ Left panel of the window.
 class SidePanel
 {
 public:
-    static constexpr float Width = 270.0f; // pixels
+    static constexpr float Width = 300.0f; // pixels
 
     SidePanel(const Timeline& timeline, TrailSettings& trails, OrbitCamera& camera, std::vector<std::string> jointNames)
         : m_timeline(timeline), m_trails(trails), m_camera(camera), m_jointNames(std::move(jointNames))
@@ -96,17 +98,52 @@ private:
         if (ImGui::Button("Reset")) m_camera.Reset();
 
         ImGui::Spacing();
-        ImGui::TextDisabled("Left-drag  rotate");
-        ImGui::TextDisabled("Right-drag pan");
-        ImGui::TextDisabled("Wheel      zoom");
-        ImGui::TextDisabled("1/2/3      views");
-        ImGui::TextDisabled("R          reset view");
-        ImGui::TextDisabled("Space      play/pause");
-        ImGui::TextDisabled("Left/Right jump 1 s");
+        RenderHelp();
+    }
+
+    // "Help" accordion with the mouse/keyboard controls. ImGui opens sections instantly,
+    // so the animation is done by hand: the area's height grows/shrinks and the text fades.
+    void RenderHelp()
+    {
+        static constexpr const char* lines[] = {
+            "Left-drag  rotate",
+            "Right-drag pan",
+            "Wheel      zoom",
+            "1/2/3      views",
+            "R          reset view",
+            "Space      play/pause",
+            "Left/Right jump 1 s",
+        };
+        constexpr int lineCount = sizeof(lines) / sizeof(lines[0]);
+
+        // Arrow header; NoTreePushOnOpen = no indent and no TreePop() needed.
+        const bool open = ImGui::TreeNodeEx("Help", ImGuiTreeNodeFlags_NoTreePushOnOpen);
+
+        // Move m_helpAnim towards 1 (open) or 0 (closed). Exponential = fast start, soft finish.
+        constexpr float speed = 12.0f;
+        const float target = open ? 1.0f : 0.0f;
+        m_helpAnim += (target - m_helpAnim) * std::min(1.0f, GetFrameTime() * speed);
+        if (std::abs(target - m_helpAnim) < 0.001f)
+            m_helpAnim = target;
+
+        if (m_helpAnim <= 0.0f)
+            return; // fully closed - draw nothing
+
+        // Reveal only part of the text area (clipped by the child window) and fade it in.
+        const float fullHeight = lineCount * ImGui::GetTextLineHeightWithSpacing();
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * m_helpAnim);
+        ImGui::BeginChild("##help", { 0.0f, fullHeight * m_helpAnim }, ImGuiChildFlags_None,
+                          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+        for (const char* line : lines)
+            ImGui::TextDisabled("%s", line);
+        ImGui::EndChild();
+        ImGui::PopStyleVar();
     }
 
     const Timeline& m_timeline;
     TrailSettings& m_trails;
     OrbitCamera& m_camera;
     std::vector<std::string> m_jointNames;
+
+    float m_helpAnim = 0.0f; // 0 = help closed, 1 = fully open
 };

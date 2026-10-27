@@ -43,9 +43,13 @@ inline void DrawTrail(const FrameTrack& track, int joint, float time, float leng
         if (static_cast<size_t>(joint) >= current.joints.size() || static_cast<size_t>(joint) >= previous.joints.size())
             return;
 
-        // 0 at the oldest point (invisible) -> 1 at the newest point (solid).
+        // 0 at the oldest point (invisible, thin) -> 1 at the newest point (solid, thick).
+        // Drawn as small tubes instead of 1-pixel lines, so trails are visible on a projector.
         const float fade = static_cast<float>(i) / segments;
-        DrawLine3D(previous.joints[joint], current.joints[joint], ColorAlpha(color, fade));
+        const float previousFade = static_cast<float>(i - 1) / segments;
+        constexpr float maxRadius = 0.008f;
+        DrawCylinderEx(previous.joints[joint], current.joints[joint], maxRadius * previousFade, maxRadius * fade, 6,
+                       ColorAlpha(color, fade));
 
         previous = std::move(current);
     }

@@ -17,6 +17,8 @@ extern "C"
 #include "ui/OrbitCamera.h"
 #include "ui/SidePanel.h"
 #include "ui/Trails.h"
+#include "ui/Theme.h"
+#include "ui/Scene.h"
 
 #include <iostream>
 #include <memory>
@@ -292,14 +294,15 @@ int main()
     SetTargetFPS(60);
 
     rlImGuiSetup(true); /* dark theme */
+    Theme::ApplyImGuiStyle();
 
     FakeArm arm; // placeholder until the Charles CSV pipeline exists
     Timeline timeline;
     timeline.SetDuration(arm.GetDuration());
     TimelineUI timelineUI(timeline);
 
-    // Look at the arm from front-right, slightly above
-    OrbitCamera camera({ 0.2f, 1.2f, 0.0f }, 1.8f, 35.0f, 15.0f);
+    // Look at the arm from front-right and above, far enough back to see the floor shadows under it
+    OrbitCamera camera({ 0.2f, 0.7f, 0.0f }, 2.8f, 35.0f, 25.0f);
 
     // Trails on elbow and wrist by default (the shoulder barely moves)
     TrailSettings trails;
@@ -318,11 +321,14 @@ int main()
         camera.Update();
 
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(Theme::BackgroundBottom);
+        Scene::DrawBackground();
 
-        // 3. Draw the 3D scene
+        // 3. Draw the 3D scene, centred in the area next to the side panel and above the timeline
         BeginMode3D(camera.Get());
-        DrawGrid(10, 0.25f);
+        Scene::CenterViewIn(SidePanel::Width, 0.0f, static_cast<float>(GetScreenWidth()),
+                            static_cast<float>(GetScreenHeight()) - TimelineUI::Height);
+        Scene::DrawFloorGrid();
         DrawTrails(arm.GetTrack(), timeline.GetTime(), trails, FakeArm::JointColor);
         arm.Render();
         EndMode3D();
